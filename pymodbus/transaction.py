@@ -171,8 +171,8 @@ class ModbusTransactionManager(object):
                         mbap = self.client.framer.decode_data(response)
                         if (mbap.get('unit') == request.unit_id):
                             break
-                        if ('lenght' in mbap and expected_response_length and
-                            mbap.get('lenght') == expected_response_length):
+                        if ('length' in mbap and expected_response_length and
+                            mbap.get('length') == expected_response_length):
                             break
                         _logger.debug("Retry on invalid - {}".format(retries))
                         if hasattr(self.client, "state"):
@@ -239,6 +239,10 @@ class ModbusTransactionManager(object):
                 _logger.debug("Changing transaction state from 'SENDING' "
                               "to 'WAITING FOR REPLY'")
                 self.client.state = ModbusTransactionState.WAITING_FOR_REPLY
+            if self.client.handle_local_echo is True:
+                local_echo_packet = self._recv(size, full)
+                if local_echo_packet != packet:
+                    return b'', "Wrong local echo"
             result = self._recv(response_length, full)
             if _logger.isEnabledFor(logging.DEBUG):
                     _logger.debug("RECV: " + hexlify_packets(result))
